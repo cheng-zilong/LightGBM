@@ -222,6 +222,17 @@ class FeatureGroup {
     }
   }
 
+  void CopyFromTwoGroups(FeatureGroup* feature1, FeatureGroup* feature2, bool keep_feature1, bool keep_feature2){
+    if (!is_multi_val_) {
+      bin_data_->CopyFromTwoBins(feature1->bin_data_.get(), feature2->bin_data_.get(), keep_feature1, keep_feature2);
+    } else {
+      Log::Warning("CopyFromTwoGroups() has not been tested for multiple bins");
+      for (int i = 0; i < num_feature_; ++i) {
+        multi_bin_data_[i]->CopyFromTwoBins(feature1->multi_bin_data_[i].get(), feature2->multi_bin_data_[i].get(), keep_feature1, keep_feature2);
+      }
+    }
+  }
+
   inline void CopySubrow(const FeatureGroup* full_feature, const data_size_t* used_indices, data_size_t num_used_indices) {
     if (!is_multi_val_) {
       bin_data_->CopySubrow(full_feature->bin_data_.get(), used_indices, num_used_indices);

@@ -797,6 +797,69 @@ void Dataset::ReSize(data_size_t num_data) {
   }
 }
 
+void Dataset::CopyFromTwoDatasets(Dataset* dataset1, Dataset* dataset2, bool keep_dataset1, bool keep_dataset2){
+  std::vector<int> group_ids, subfeature_ids;
+  group_ids.reserve(dataset1->num_features());
+  subfeature_ids.reserve(dataset1->num_features());
+  for (int group = 0; group < dataset1->num_feature_groups(); ++group) {
+    if (dataset1->IsMultiGroup(group)) {
+      for (int sub_feature = 0; sub_feature <
+          dataset1->FeatureGroupNumFeature(group); ++sub_feature) {
+        group_ids.emplace_back(group);
+        subfeature_ids.emplace_back(sub_feature);
+      }
+    } else {
+      group_ids.emplace_back(group);
+      subfeature_ids.emplace_back(-1);
+    }
+  }
+  int num_copy_tasks = static_cast<int>(group_ids.size());
+
+  OMP_INIT_EX();
+  #pragma omp parallel for schedule(dynamic)
+  for (int task_id = 0; task_id < num_copy_tasks; ++task_id) {
+    OMP_LOOP_EX_BEGIN();
+    int group = group_ids[task_id];
+    int subfeature = subfeature_ids[task_id];
+    feature_groups_[group]->CopyFromTwoGroups(dataset1->feature_groups_[group].get(), dataset2->feature_groups_[group].get(),
+                                            keep_dataset1, keep_dataset2);
+    OMP_LOOP_EX_END();
+  }
+  OMP_THROW_EX();
+
+  // if (need_meta_data) {
+  //   metadata_.Init(fullset->metadata_, used_indices, num_used_indices);
+  // }
+  Log::Warning("metadata has to be reset.");
+  is_finish_load_ = true;
+  numeric_feature_map_ = dataset1->numeric_feature_map_;
+  num_numeric_features_ = dataset1->num_numeric_features_;
+  Log::Warning("Raw data is ignored if has.");
+//   if (has_raw_) {
+//     ResizeRaw(num_used_indices);
+// #pragma omp parallel for schedule(static)
+//     for (int i = 0; i < num_used_indices; ++i) {
+//       for (int j = 0; j < num_numeric_features_; ++j) {
+//         raw_data_[j][i] = fullset->raw_data_[j][used_indices[i]];
+//       }
+//     }
+//   }
+  // update CUDA storage for column data and metadata
+  device_type_ = dataset1->device_type_;
+  gpu_device_id_ = dataset1->gpu_device_id_;
+
+  Log::Warning("CUDA has not been supported!");
+  // #ifdef USE_CUDA_EXP
+  // if (device_type_ == std::string("cuda_exp")) {
+  //   if (cuda_column_data_ == nullptr) {
+  //     cuda_column_data_.reset(new CUDAColumnData(fullset->num_data(), gpu_device_id_));
+  //     metadata_.CreateCUDAMetadata(gpu_device_id_);
+  //   }
+  //   cuda_column_data_->CopySubrow(fullset->cuda_column_data(), used_indices, num_used_indices);
+  // }
+  // #endif  // USE_CUDA_EXP
+}
+
 void Dataset::CopySubrow(const Dataset* fullset,
                          const data_size_t* used_indices,
                          data_size_t num_used_indices, bool need_meta_data) {

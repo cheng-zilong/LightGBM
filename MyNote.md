@@ -11,7 +11,7 @@ file feature_group.h
     class FeatureGroup
     add method FeatureGroup::CopyFromTwoGroups
     This function concats two feature groups together and generate a new feature group
-    void CopyFromTwoGroups(FeatureGroup* feature1, FeatureGroup* feature1, bool keep_feature1, bool keep_feature2)
+    void CopyFromTwoGroups(FeatureGroup* feature1, FeatureGroup* feature2, bool keep_feature1, bool keep_feature2)
 
 file dataset.h/dataset.cpp
     class Dataset
@@ -19,6 +19,12 @@ file dataset.h/dataset.cpp
     This function concats two datasets together and generate a new dataset
     void CopyFromTwoDatasets(Dataset* dataset1, Dataset* dataset2, bool keep_dataset1, bool keep_dataset2)
 
+    add method Dataset::FeatureGroupNumFeature()
+    inline int FeatureGroupNumFeature(int group) const {
+        return feature_groups_[group]->num_feature_;
+    }
+
 file c_api.h/c_api.cpp
     add function LGBM_DatasetConcatTwoDatasets
     int LGBM_DatasetConcatTwoDatasets(Dataset* dataset1, Dataset* dataset2, bool keep_dataset1, bool keep_dataset2, DatasetHandle* out)
+

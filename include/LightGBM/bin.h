@@ -266,7 +266,7 @@ class Bin {
   */
   virtual void Push(int tid, data_size_t idx, uint32_t value) = 0;
 
-  virtual void CopySubrow(const Bin* full_bin, const data_size_t* used_indices, data_size_t num_used_indices) = 0;
+  virtual void CopyFromTwoBins(Bin* bin1, Bin* bin2, bool keep_bin1, bool keep_bin2) = 0;
 
   virtual void CopySubrow(const Bin* full_bin, const data_size_t* used_indices, data_size_t num_used_indices) = 0;
   /*!

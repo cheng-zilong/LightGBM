@@ -558,6 +558,68 @@ class SparseBin : public Bin {
     }
   }
 
+  void CopyFromTwoBins(Bin* bin1, Bin* bin2, bool keep_bin1, bool keep_bin2){
+    printf("SparseBin::CopyFromTwoBins has not been tested.");
+    deltas_.clear();
+    vals_.clear();
+    auto full_bin1 = dynamic_cast<SparseBin<VAL_T>*>(bin1);
+    auto full_bin2 = dynamic_cast<SparseBin<VAL_T>*>(bin2);
+    SparseBinIterator<VAL_T> iterator1(full_bin1, 0);
+    SparseBinIterator<VAL_T> iterator2(full_bin2, 0);
+    data_size_t last_idx = 0;
+    // transform to delta array
+    data_size_t num_indices1 = full_bin1->num_data_;
+    data_size_t num_indices2 = full_bin2->num_data_;
+    for (data_size_t i = 0; i < num_indices1; ++i) {
+      auto bin = iterator1.InnerRawGet(i);
+      if (bin > 0) {
+        data_size_t cur_delta = i - last_idx;
+        while (cur_delta >= 256) {
+          deltas_.push_back(255);
+          vals_.push_back(0);
+          cur_delta -= 255;
+        }
+        deltas_.push_back(static_cast<uint8_t>(cur_delta));
+        vals_.push_back(bin);
+        last_idx = i;
+      }
+    }
+
+    if (!keep_bin1){
+      delete bin1;
+    }
+
+    for (data_size_t i = num_indices1; i < num_indices1+num_indices2; ++i) {
+      auto bin = iterator2.InnerRawGet(i);
+      if (bin > 0) {
+        data_size_t cur_delta = i - last_idx;
+        while (cur_delta >= 256) {
+          deltas_.push_back(255);
+          vals_.push_back(0);
+          cur_delta -= 255;
+        }
+        deltas_.push_back(static_cast<uint8_t>(cur_delta));
+        vals_.push_back(bin);
+        last_idx = i ;
+      }
+    }
+
+    if (!keep_bin2){
+      delete bin2;
+    }
+
+    // avoid out of range
+    deltas_.push_back(0);
+    num_vals_ = static_cast<data_size_t>(vals_.size());
+
+    // reduce memory cost
+    deltas_.shrink_to_fit();
+    vals_.shrink_to_fit();
+
+    // generate fast index
+    GetFastIndex();
+  }
+
   void CopySubrow(const Bin* full_bin, const data_size_t* used_indices,
                   data_size_t num_used_indices) override {
     auto other_bin = dynamic_cast<const SparseBin<VAL_T>*>(full_bin);

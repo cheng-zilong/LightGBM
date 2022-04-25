@@ -424,6 +424,12 @@ class DenseBin : public Bin {
     }
   }
 
+  void CopyFromTwoBins(Bin* bin1, Bin* bin2, bool keep_bin1, bool keep_bin2){
+    printf("TenseBin::CopyFromTwoBins has not been completed.");
+    auto full_bin1 = dynamic_cast<const DenseBin<VAL_T, IS_4BIT>*>(bin1);
+    auto full_bin2 = dynamic_cast<const DenseBin<VAL_T, IS_4BIT>*>(bin2);
+  }
+
   void CopySubrow(const Bin* full_bin, const data_size_t* used_indices,
                   data_size_t num_used_indices) override {
     auto other_bin = dynamic_cast<const DenseBin<VAL_T, IS_4BIT>*>(full_bin);

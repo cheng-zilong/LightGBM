@@ -483,6 +483,8 @@ class Dataset {
   }
   void ReSize(data_size_t num_data);
 
+  void CopyFromTwoDatasets(Dataset* dataset1, Dataset* dataset2, bool keep_dataset1, bool keep_dataset2);
+
   void CopySubrow(const Dataset* fullset, const data_size_t* used_indices, data_size_t num_used_indices, bool need_meta_data);
 
   MultiValBin* GetMultiBinFromSparseFeatures(const std::vector<uint32_t>& offsets) const;
@@ -604,6 +606,10 @@ class Dataset {
 
   inline int FeatureGroupNumBin(int group) const {
     return feature_groups_[group]->num_total_bin_;
+  }
+
+  inline int FeatureGroupNumFeature(int group) const {
+    return feature_groups_[group]->num_feature_;
   }
 
   inline const BinMapper* FeatureBinMapper(int i) const {
