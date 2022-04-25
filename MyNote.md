@@ -1,4 +1,5 @@
 2022/04/26
+Outline 
 
 file bin.h/dense_bin.hpp/sparse_bin.hpp
     class Bin class DenseBin class SparseBin

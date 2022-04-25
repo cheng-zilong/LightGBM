@@ -267,6 +267,8 @@ class Bin {
   virtual void Push(int tid, data_size_t idx, uint32_t value) = 0;
 
   virtual void CopySubrow(const Bin* full_bin, const data_size_t* used_indices, data_size_t num_used_indices) = 0;
+
+  virtual void CopySubrow(const Bin* full_bin, const data_size_t* used_indices, data_size_t num_used_indices) = 0;
   /*!
   * \brief Get bin iterator of this bin for specific feature
   * \param min_bin min_bin of current used feature
