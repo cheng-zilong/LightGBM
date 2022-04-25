@@ -650,21 +650,10 @@ class Sequence(abc.ABC):
 
     @abc.abstractmethod
     def __getitem__(self, idx: Union[int, slice, List[int]]) -> np.ndarray:
-        """Return data for given row index.
+        """
+        Return data for given row index.
 
         A basic implementation should look like this:
-
-        .. code-block:: python
-
-            if isinstance(idx, numbers.Integral):
-                return self._get_one_line(idx)
-            elif isinstance(idx, slice):
-                return np.stack([self._get_one_line(i) for i in range(idx.start, idx.stop)])
-            elif isinstance(idx, list):
-                # Only required if using ``Dataset.subset()``.
-                return np.array([self._get_one_line(i) for i in idx])
-            else:
-                raise TypeError(f"Sequence index must be integer, slice or list, got {type(idx).__name__}")
 
         Parameters
         ----------
@@ -2543,6 +2532,26 @@ class Dataset:
             self.construct().handle,
             c_str(str(filename))))
         return self
+
+    def AddData(self, append_data:np.ndarray, append_label:np.array):
+        if self.handle is not None:
+            raise LightGBMError("dataset has been initialized. It must be a dataset without initialization.") 
+        
+        self.construct()
+        if (not isinstance(append_data, np.ndarray)) or len(append_data.shape) != 2:
+            raise LightGBMError("append_data must be numpy two dimension array.") 
+        if append_data.shape[1] != self.num_feature():
+            raise LightGBMError("Number of features in the new data does not match the current number of features.")
+        if append_data.shape[0] != len(append_label):
+            raise LightGBMError("Number of rows in the new data does not match the number of labels.")
+        if not isinstance(append_label, np.ndarray):
+            raise LightGBMError("append_label must be numpy array.") 
+        _safe_call(_LIB.LGBM_RevertFinishStatus(self.handle))
+        self._push_rows(append_data)
+        num_data = ctypes.c_int(0)
+        _log_info("Number of data after adding: %d"%num_data.value)
+        new_label = np.concatenate([self.get_label(), append_label])
+        self.set_label(new_label)
 
 
 class Booster:

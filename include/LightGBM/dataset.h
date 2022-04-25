@@ -787,6 +787,10 @@ class Dataset {
     return feature_groups_[feature_group_index]->feature_min_bin(sub_feature_index);
   }
 
+  void SetFinishStatus(bool finish_status){
+    this->is_finish_load_=finish_status;
+  }
+
   #ifdef USE_CUDA_EXP
 
   const CUDAColumnData* cuda_column_data() const {

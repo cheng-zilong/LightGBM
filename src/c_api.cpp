@@ -1007,19 +1007,32 @@ int LGBM_DatasetCreateByReference(const DatasetHandle reference,
   API_END();
 }
 
+
+int LGBM_RevertFinishStatus(DatasetHandle dataset){
+  API_BEGIN();
+  auto p_dataset = reinterpret_cast<Dataset*>(dataset);
+  p_dataset->SetFinishStatus(false);
+  Log::Info("Finish Status has been set to be 'false'.");
+  API_END();
+}
+
 int LGBM_DatasetPushRows(DatasetHandle dataset,
                          const void* data,
                          int data_type,
                          int32_t nrow,
                          int32_t ncol,
                          int32_t start_row) {
+
   API_BEGIN();
   auto p_dataset = reinterpret_cast<Dataset*>(dataset);
+  Log::Info("Current number of data: %d. Number of new data: %d. Start adding new rows....", p_dataset->num_data(), nrow);
   auto get_row_fun = RowFunctionFromDenseMatric(data, nrow, ncol, data_type, 1);
   if (p_dataset->has_raw()) {
+    Log::Info("Raw data exists.");
     p_dataset->ResizeRaw(p_dataset->num_numeric_features() + nrow);
   }
   OMP_INIT_EX();
+  
   #pragma omp parallel for schedule(static)
   for (int i = 0; i < nrow; ++i) {
     OMP_LOOP_EX_BEGIN();
@@ -1032,6 +1045,7 @@ int LGBM_DatasetPushRows(DatasetHandle dataset,
   if (start_row + nrow == p_dataset->num_data()) {
     p_dataset->FinishLoad();
   }
+  Log::Info("Complete adding new rows. Current number of data: %d.", p_dataset->num_data());
   API_END();
 }
 

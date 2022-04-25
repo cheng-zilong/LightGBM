@@ -275,3 +275,8 @@ def test_booster():
         c_str(''),
         c_str('preb.txt'))
     LIB.LGBM_BoosterFree(booster2)
+
+if __name__=='__main__':
+    test_dataset()
+    test_booster()
+    

@@ -1339,6 +1339,8 @@ LIGHTGBM_C_EXPORT int LGBM_NetworkInit(const char* machines,
  */
 LIGHTGBM_C_EXPORT int LGBM_NetworkFree();
 
+LIGHTGBM_C_EXPORT int LGBM_RevertFinishStatus(DatasetHandle dataset);
+
 /*!
  * \brief Initialize the network with external collective functions.
  * \param num_machines Total number of machines
